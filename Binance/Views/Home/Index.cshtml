@@ -1,0 +1,217 @@
+﻿@model Binance.Net.Interfaces.IBinanceStreamKlineData
+
+@{
+    ViewData["Title"] = "Home Page";
+    var lstOrder = ViewBag.Order as IEnumerable<Binance.Net.Objects.Futures.FuturesData.BinanceFuturesOrder>;
+}
+
+<link rel="stylesheet" href="https://kendo.cdn.telerik.com/2020.3.1118/styles/kendo.common.min.css" />
+@*<link rel="stylesheet" href="https://kendo.cdn.telerik.com/2020.3.111/kendo.default.min.css" />
+    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2020.3.111/kendo.default.mobile.min.css" />*@
+
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+
+
+<div class="row">
+    <div class="col-md-12">
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label class="control-label " for="email">Pair:</label>
+                <div>
+                    <select class="selectpicker" data-live-search="true" data-width="100%">
+                        <option data-tokens="BTC">BTC</option>
+                        <option data-tokens="ETH">ETH</option>
+                        <option data-tokens="XRP">XRP</option>
+                    </select>
+                </div>
+            </div>
+            <div class="btn-group d-flex" role="group">
+                <button type="button" class="btn btn-success">LONG</button>
+                <button type="button" class="btn btn-danger">SHORT</button>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-12 mt-5">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Ngày giờ</th>
+                    <th scope="col">Cặp</th>
+                    <th scope="col">Loại</th>
+                    <th scope="col">Số lượng</th>
+                    <th scope="col">Giá vào</th>
+                    <th scope="col">Giá hiện tại</th>
+                    <th scope="col">ROE (%)</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in lstOrder)
+                {
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>@item.CreatedTime</td>
+                        <td>@item.Symbol</td>
+                        @if (item.Side == Binance.Net.Enums.OrderSide.Sell)
+                        {
+                            <td><span class='badge badge-danger'>Short</span></td>
+                        }
+                        else if (item.Side == Binance.Net.Enums.OrderSide.Buy)
+                        {
+                            <td><span class='badge badge-success'>Long</span></td>
+                        }
+                        else
+                        {
+                            <td>-</td>
+                        }
+                        <td>@item.OriginalQuantity</td>
+                        <td>
+                            @item.AvgPrice
+                        </td>
+                        <td>
+                            current price
+                        </td>
+                        <td>current percent</td>
+                        <td><button type="button" class="btn btn-danger btn-sm">Đóng lệnh</button></td>
+                    </tr>
+                }
+                @*<tr>
+                    <th scope="row">1</th>
+                    <td>2020-12-29 06:54:00</td>
+                    <td>XRPUSDT</td>
+                    <td><span class="badge badge-success">Mua</span></td>
+                    <td>8,701.6 XRP</td>
+                    <td>
+                        0.2495
+                    </td>
+                    <td>
+                        0.2588
+                    </td>
+                    <td>8%</td>
+                    <td><button type="button" class="btn btn-danger btn-sm">Đóng lệnh</button></td>
+                </tr>*@
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+<div class="text-center">
+    <div>
+        <br />
+        The last price of the BTCUSDT symbol is @(Model?.Data.Close.ToString() ?? "not known yet")
+        <br />
+        (refresh the page to get the latest price)
+    </div>
+
+    @*<div id="grid" style="margin-bottom:20px"></div>*@
+
+    <div class="container">
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-2">User</div>
+            <div class="col-4"><input type="text" id="userInput" /></div>
+        </div>
+        <div class="row">
+            <div class="col-2">Message</div>
+            <div class="col-4"><input type="text" id="messageInput" /></div>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="col-6">
+                <input type="button" id="sendButton" value="Send Message" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <hr />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <ul id="messagesList"></ul>
+        </div>
+    </div>
+
+</div>
+
+@*<script src="http://kendo.cdn.telerik.com/2020.3.1118/js/kendo.all.min.js"></script>*@
+
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/chat.js"></script>
+
+@*<script>
+        $(function () {
+            var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+            var hub = connection.createHubProxy("chatHub");
+            var hubStart = connection.start({ jsonp: true });
+
+            $("#notification").kendoNotification({
+                width: "100%",
+                position: {
+                    top: 0,
+                    left: 0
+                }
+            });
+            $("#grid").kendoGrid({
+                height: 550,
+                editable: true,
+                sortable: true,
+                columns: [
+                    { field: "UnitPrice" },
+                    { field: "ProductName" },
+                    { command: "destroy", width: 150 }
+                ],
+                toolbar: ["create"],
+                dataSource: {
+                    type: "signalr",
+                    autoSync: true,
+                    // Handle the push event to display notifications when push updates arrive
+                    push: function (e) {
+                        var notification = $("#notification").data("kendoNotification");
+                        notification.success(e.type);
+                    },
+                    schema: {
+                        model: {
+                            id: "ID",
+                            fields: {
+                                "ID": { editable: false, nullable: true },
+                                "CreatedAt": { type: "date" },
+                                "UnitPrice": { type: "number" }
+                            }
+                        }
+                    },
+                    sort: [{ field: "CreatedAt", dir: "desc" }],
+                    transport: {
+                        signalr: {
+                            promise: hubStart,
+                            hub: hub,
+                            server: {
+                                read: "read",
+                                update: "update",
+                                destroy: "destroy",
+                                create: "create"
+                            },
+                            client: {
+                                read: "read",
+                                update: "update",
+                                destroy: "destroy",
+                                create: "create"
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>*@
